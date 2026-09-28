@@ -101,13 +101,15 @@ func StartWebSocket(ctx context.Context, url string, callback func(head Head, xm
 						log.Println("gzip read:", err)
 						return
 					}
-					defer reader.Close()
 
 					gunzippedBytes := bytes.Buffer{}
 					if _, err = gunzippedBytes.ReadFrom(reader); err != nil {
 						log.Println("gzip read:", err)
+						reader.Close()
 						return
 					}
+					// ループ内のdeferは接続終了まで溜まるため、メッセージごとに明示的に閉じる
+					reader.Close()
 
 					callback(data.Head, string(gunzippedBytes.Bytes()))
 				}
